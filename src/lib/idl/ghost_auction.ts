@@ -1,0 +1,172 @@
+// GhostAuction Anchor IDL
+export const IDL = {
+  version: "0.1.0",
+  name: "ghost_auction",
+  instructions: [
+    {
+      name: "initializeAuction",
+      accounts: [
+        { name: "auction", isMut: true, isSigner: false },
+        { name: "escrowVault", isMut: true, isSigner: false },
+        { name: "nftMint", isMut: false, isSigner: false },
+        { name: "nftToken", isMut: true, isSigner: false },
+        { name: "escrowNftToken", isMut: true, isSigner: false },
+        { name: "seller", isMut: true, isSigner: true },
+        { name: "tokenProgram", isMut: false, isSigner: false },
+        { name: "associatedTokenProgram", isMut: false, isSigner: false },
+        { name: "systemProgram", isMut: false, isSigner: false },
+        { name: "rent", isMut: false, isSigner: false },
+      ],
+      args: [
+        { name: "reservePrice", type: "u64" },
+        { name: "startTime", type: "i64" },
+        { name: "biddingDuration", type: "i64" },
+        { name: "revealDuration", type: "i64" },
+        { name: "auctionBump", type: "u8" },
+        { name: "vaultBump", type: "u8" },
+      ],
+    },
+    {
+      name: "commitBid",
+      accounts: [
+        { name: "auction", isMut: true, isSigner: false },
+        { name: "bidAccount", isMut: true, isSigner: false },
+        { name: "escrowVault", isMut: true, isSigner: false },
+        { name: "bidder", isMut: true, isSigner: true },
+        { name: "systemProgram", isMut: false, isSigner: false },
+      ],
+      args: [
+        { name: "bidHash", type: { array: ["u8", 32] } },
+        { name: "escrowAmount", type: "u64" },
+      ],
+    },
+    {
+      name: "revealBid",
+      accounts: [
+        { name: "auction", isMut: true, isSigner: false },
+        { name: "bidAccount", isMut: true, isSigner: false },
+        { name: "bidder", isMut: true, isSigner: true },
+      ],
+      args: [
+        { name: "amount", type: "u64" },
+        { name: "nonce", type: { array: ["u8", 32] } },
+      ],
+    },
+    {
+      name: "finalizeAuction",
+      accounts: [
+        { name: "auction", isMut: true, isSigner: false },
+        { name: "escrowVault", isMut: true, isSigner: false },
+        { name: "winnerBidAccount", isMut: true, isSigner: false },
+        { name: "escrowNftToken", isMut: true, isSigner: false },
+        { name: "winnerNftToken", isMut: true, isSigner: false },
+        { name: "seller", isMut: true, isSigner: false },
+        { name: "winner", isMut: true, isSigner: false },
+        { name: "authority", isMut: true, isSigner: true },
+        { name: "tokenProgram", isMut: false, isSigner: false },
+        { name: "associatedTokenProgram", isMut: false, isSigner: false },
+        { name: "systemProgram", isMut: false, isSigner: false },
+      ],
+      args: [],
+    },
+    {
+      name: "claimRefund",
+      accounts: [
+        { name: "auction", isMut: true, isSigner: false },
+        { name: "bidAccount", isMut: true, isSigner: false },
+        { name: "escrowVault", isMut: true, isSigner: false },
+        { name: "bidder", isMut: true, isSigner: true },
+        { name: "systemProgram", isMut: false, isSigner: false },
+      ],
+      args: [],
+    },
+    {
+      name: "cancelAuction",
+      accounts: [
+        { name: "auction", isMut: true, isSigner: false },
+        { name: "escrowVault", isMut: true, isSigner: false },
+        { name: "escrowNftToken", isMut: true, isSigner: false },
+        { name: "nftToken", isMut: true, isSigner: false },
+        { name: "seller", isMut: true, isSigner: true },
+        { name: "tokenProgram", isMut: false, isSigner: false },
+        { name: "systemProgram", isMut: false, isSigner: false },
+      ],
+      args: [],
+    },
+  ],
+  accounts: [
+    {
+      name: "Auction",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "seller", type: "publicKey" },
+          { name: "nftMint", type: "publicKey" },
+          { name: "reservePrice", type: "u64" },
+          { name: "startTime", type: "i64" },
+          { name: "biddingEndTime", type: "i64" },
+          { name: "revealEndTime", type: "i64" },
+          { name: "highestBid", type: "u64" },
+          { name: "highestBidder", type: "publicKey" },
+          { name: "totalBids", type: "u32" },
+          { name: "revealedBids", type: "u32" },
+          { name: "state", type: { defined: "AuctionState" } },
+          { name: "auctionBump", type: "u8" },
+          { name: "vaultBump", type: "u8" },
+          { name: "createdAt", type: "i64" },
+        ],
+      },
+    },
+    {
+      name: "BidAccount",
+      type: {
+        kind: "struct",
+        fields: [
+          { name: "bidder", type: "publicKey" },
+          { name: "auction", type: "publicKey" },
+          { name: "bidHash", type: { array: ["u8", 32] } },
+          { name: "escrowAmount", type: "u64" },
+          { name: "revealedAmount", type: "u64" },
+          { name: "isRevealed", type: "bool" },
+          { name: "isRefunded", type: "bool" },
+          { name: "isWinner", type: "bool" },
+          { name: "committedAt", type: "i64" },
+          { name: "revealedAt", type: "i64" },
+        ],
+      },
+    },
+  ],
+  types: [
+    {
+      name: "AuctionState",
+      type: {
+        kind: "enum",
+        variants: [
+          { name: "Created" },
+          { name: "Bidding" },
+          { name: "Reveal" },
+          { name: "Finalized" },
+          { name: "Cancelled" },
+        ],
+      },
+    },
+  ],
+  errors: [
+    { code: 6000, name: "AuctionNotActive", msg: "Auction is not in active bidding state" },
+    { code: 6001, name: "AuctionNotInReveal", msg: "Auction is not in reveal phase" },
+    { code: 6002, name: "BiddingNotEnded", msg: "Bidding phase has not ended yet" },
+    { code: 6003, name: "RevealNotEnded", msg: "Reveal phase has not ended yet" },
+    { code: 6004, name: "InvalidBidHash", msg: "Revealed bid does not match committed hash" },
+    { code: 6005, name: "BidAlreadyRevealed", msg: "Bid has already been revealed" },
+    { code: 6006, name: "BidBelowReserve", msg: "Bid is below reserve price" },
+    { code: 6007, name: "NotSeller", msg: "Only the seller can perform this action" },
+    { code: 6008, name: "AuctionAlreadyFinalized", msg: "Auction has already been finalized" },
+    { code: 6009, name: "NotRefundable", msg: "Bid is not eligible for refund" },
+    { code: 6010, name: "InsufficientEscrow", msg: "Escrow amount less than bid" },
+    { code: 6011, name: "AuctionNotStarted", msg: "Auction has not started yet" },
+    { code: 6012, name: "BiddingEnded", msg: "Bidding period has ended" },
+    { code: 6013, name: "HasBids", msg: "Cannot cancel auction with existing bids" },
+  ],
+} as const;
+
+export type GhostAuctionIDL = typeof IDL;

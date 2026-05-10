@@ -1,26 +1,321 @@
 @import "tailwindcss";
 
+/* ============================================
+   GHOST AUCTION - NEUBRUTALIST DESIGN SYSTEM
+   ============================================ */
+
+@theme {
+  /* Color Palette */
+  --color-bg-cream: #f5f1e8;
+  --color-bg-dark: #1a1a2e;
+  --color-bg-darker: #0f0f1a;
+  --color-bg-card: #16213e;
+  --color-bg-card-light: #fffef9;
+  
+  --color-neon-green: #39ff14;
+  --color-neon-green-dim: #2ed60f;
+  --color-neon-purple: #bf5af2;
+  --color-neon-purple-dim: #9b3dd6;
+  --color-neon-cyan: #00f5ff;
+  --color-neon-pink: #ff2d55;
+  --color-neon-orange: #ff9500;
+  --color-neon-yellow: #ffd60a;
+  
+  --color-ghost-black: #0a0a0a;
+  --color-ghost-white: #fafafa;
+  --color-ghost-gray: #2a2a3e;
+  --color-ghost-border: #333355;
+  
+  /* Shadows */
+  --shadow-brutal: 4px 4px 0px #000;
+  --shadow-brutal-lg: 8px 8px 0px #000;
+  --shadow-brutal-xl: 12px 12px 0px #000;
+  --shadow-brutal-green: 4px 4px 0px #39ff14;
+  --shadow-brutal-purple: 4px 4px 0px #bf5af2;
+  
+  /* Font */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: 'Inter', sans-serif;
+}
+
+
+/* Root variables for JS access — Light mode is default */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-primary: #f5f1e8;
+  --bg-secondary: #fffef9;
+  --text-primary: #0a0a0a;
+  --accent-green: #2ed60f;
+  --accent-purple: #9b3dd6;
+  --border-color: #000000;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #0f0f1a;
+  --text-primary: #fafafa;
+  --accent-green: #39ff14;
+  --accent-purple: #bf5af2;
+  --border-color: #333355;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-green);
+  border: 2px solid #000;
+}
+
+/* Neubrutalist Component Classes */
+.neu-card {
+  background: var(--bg-secondary);
+  border: 3px solid var(--border-color);
+  box-shadow: var(--shadow-brutal);
+  transition: all 0.2s ease;
+}
+
+.neu-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal-lg);
+}
+
+.neu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 3px solid #000;
+  box-shadow: var(--shadow-brutal);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.neu-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal-lg);
+}
+
+.neu-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.neu-btn-green {
+  background: var(--accent-green);
+  color: #000;
+}
+
+.neu-btn-purple {
+  background: var(--accent-purple);
+  color: #fff;
+}
+
+.neu-btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.neu-btn-ghost:hover {
+  background: var(--accent-green);
+  color: #000;
+  border-color: #000;
+}
+
+.neu-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+  border: 3px solid var(--border-color);
+  box-shadow: var(--shadow-brutal);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.neu-input:focus {
+  border-color: var(--accent-green);
+  box-shadow: var(--shadow-brutal-green);
+}
+
+.neu-input::placeholder {
+  color: #666;
+  font-style: italic;
+}
+
+/* Typography */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Glow Effects */
+.glow-green {
+  text-shadow: 0 0 10px rgba(57, 255, 20, 0.5), 0 0 20px rgba(57, 255, 20, 0.3);
+}
+
+.glow-purple {
+  text-shadow: 0 0 10px rgba(191, 90, 242, 0.5), 0 0 20px rgba(191, 90, 242, 0.3);
+}
+
+.glow-box-green {
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.3), 0 0 30px rgba(57, 255, 20, 0.1);
+}
+
+.glow-box-purple {
+  box-shadow: 0 0 15px rgba(191, 90, 242, 0.3), 0 0 30px rgba(191, 90, 242, 0.1);
+}
+
+/* Animated Background Grid */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 255, 20, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Pulse animation for live elements */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Scan line effect */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Loading skeleton */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, 
+    var(--bg-secondary) 25%, 
+    rgba(57, 255, 20, 0.1) 50%, 
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  color: var(--accent-green);
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Responsive container */
+.container-ghost {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Badge */
+.neu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0px #000;
+}
+
+/* Status indicators */
+.status-live {
+  background: var(--accent-green);
+  color: #000;
+}
+
+.status-reveal {
+  background: var(--accent-purple);
+  color: #fff;
+}
+
+.status-ended {
+  background: #666;
+  color: #fff;
+}
+
+.status-upcoming {
+  background: var(--color-neon-orange);
+  color: #000;
 }

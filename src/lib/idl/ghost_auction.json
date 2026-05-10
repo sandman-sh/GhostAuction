@@ -1,0 +1,1009 @@
+{
+  "address": "BcGFyp1pKGdWgkQiN1Vf421eSEjeZq9mUEb1dh9Tm2CR",
+  "metadata": {
+    "name": "ghost_auction",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "GhostAuction - Privacy-first sealed bid NFT auctions on Solana"
+  },
+  "instructions": [
+    {
+      "name": "cancel_auction",
+      "docs": [
+        "Cancel auction (only if no bids)"
+      ],
+      "discriminator": [
+        156,
+        43,
+        197,
+        110,
+        218,
+        105,
+        143,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "auction",
+          "writable": true
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_nft_token",
+          "writable": true
+        },
+        {
+          "name": "nft_token",
+          "writable": true
+        },
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "auction"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_refund",
+      "docs": [
+        "Claim refund for losing bidders"
+      ],
+      "discriminator": [
+        15,
+        16,
+        30,
+        161,
+        255,
+        228,
+        97,
+        60
+      ],
+      "accounts": [
+        {
+          "name": "auction",
+          "writable": true,
+          "relations": [
+            "bid_account"
+          ]
+        },
+        {
+          "name": "bid_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  105,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              },
+              {
+                "kind": "account",
+                "path": "bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "bid_account"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "commit_bid",
+      "docs": [
+        "Submit a hashed bid commitment with escrowed funds"
+      ],
+      "discriminator": [
+        149,
+        237,
+        198,
+        113,
+        53,
+        66,
+        70,
+        76
+      ],
+      "accounts": [
+        {
+          "name": "auction",
+          "writable": true
+        },
+        {
+          "name": "bid_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  105,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              },
+              {
+                "kind": "account",
+                "path": "bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "bid_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "escrow_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "finalize_auction",
+      "docs": [
+        "Finalize auction: transfer NFT to winner, funds to seller"
+      ],
+      "discriminator": [
+        220,
+        209,
+        175,
+        193,
+        57,
+        132,
+        241,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "auction",
+          "writable": true,
+          "relations": [
+            "winner_bid_account"
+          ]
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              }
+            ]
+          }
+        },
+        {
+          "name": "winner_bid_account",
+          "writable": true
+        },
+        {
+          "name": "escrow_nft_token",
+          "writable": true
+        },
+        {
+          "name": "winner_nft_token",
+          "writable": true
+        },
+        {
+          "name": "seller",
+          "writable": true
+        },
+        {
+          "name": "winner",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_auction",
+      "docs": [
+        "Initialize a new sealed-bid auction"
+      ],
+      "discriminator": [
+        37,
+        10,
+        117,
+        197,
+        208,
+        88,
+        117,
+        62
+      ],
+      "accounts": [
+        {
+          "name": "auction",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "nft_mint"
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              }
+            ]
+          }
+        },
+        {
+          "name": "nft_mint"
+        },
+        {
+          "name": "nft_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "nft_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "escrow_nft_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "escrow_vault"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "nft_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "reserve_price",
+          "type": "u64"
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "bidding_duration",
+          "type": "i64"
+        },
+        {
+          "name": "reveal_duration",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "reveal_bid",
+      "docs": [
+        "Reveal a previously committed bid"
+      ],
+      "discriminator": [
+        48,
+        73,
+        28,
+        255,
+        202,
+        126,
+        236,
+        196
+      ],
+      "accounts": [
+        {
+          "name": "auction",
+          "writable": true,
+          "relations": [
+            "bid_account"
+          ]
+        },
+        {
+          "name": "bid_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  105,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "auction"
+              },
+              {
+                "kind": "account",
+                "path": "bidder"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bidder",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "bid_account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Auction",
+      "discriminator": [
+        218,
+        94,
+        247,
+        242,
+        126,
+        233,
+        131,
+        81
+      ]
+    },
+    {
+      "name": "BidAccount",
+      "discriminator": [
+        27,
+        161,
+        15,
+        114,
+        230,
+        126,
+        56,
+        104
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "AuctionNotActive",
+      "msg": "Auction is not in active bidding state"
+    },
+    {
+      "code": 6001,
+      "name": "BiddingNotEnded",
+      "msg": "Bidding phase has not ended yet"
+    },
+    {
+      "code": 6002,
+      "name": "RevealEnded",
+      "msg": "Reveal phase has ended"
+    },
+    {
+      "code": 6003,
+      "name": "RevealNotEnded",
+      "msg": "Reveal phase has not ended yet"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidBidHash",
+      "msg": "Revealed bid does not match committed hash"
+    },
+    {
+      "code": 6005,
+      "name": "BidAlreadyRevealed",
+      "msg": "Bid has already been revealed"
+    },
+    {
+      "code": 6006,
+      "name": "BidBelowReserve",
+      "msg": "Bid is below reserve price"
+    },
+    {
+      "code": 6007,
+      "name": "NotSeller",
+      "msg": "Only the seller can perform this action"
+    },
+    {
+      "code": 6008,
+      "name": "AuctionAlreadyFinalized",
+      "msg": "Auction has already been finalized"
+    },
+    {
+      "code": 6009,
+      "name": "NotRefundable",
+      "msg": "Bid is not eligible for refund"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientEscrow",
+      "msg": "Escrow amount insufficient"
+    },
+    {
+      "code": 6011,
+      "name": "AuctionNotStarted",
+      "msg": "Auction has not started yet"
+    },
+    {
+      "code": 6012,
+      "name": "BiddingEnded",
+      "msg": "Bidding period has ended"
+    },
+    {
+      "code": 6013,
+      "name": "HasBids",
+      "msg": "Cannot cancel auction with existing bids"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidDuration",
+      "msg": "Invalid auction duration"
+    },
+    {
+      "code": 6015,
+      "name": "NotWinner",
+      "msg": "Not the winning bidder"
+    },
+    {
+      "code": 6016,
+      "name": "WinnerCannotRefund",
+      "msg": "Winner cannot claim refund"
+    },
+    {
+      "code": 6017,
+      "name": "AlreadyRefunded",
+      "msg": "Already refunded"
+    },
+    {
+      "code": 6018,
+      "name": "NoBidsRevealed",
+      "msg": "No bids were revealed"
+    }
+  ],
+  "types": [
+    {
+      "name": "Auction",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "nft_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "reserve_price",
+            "type": "u64"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "bidding_end_time",
+            "type": "i64"
+          },
+          {
+            "name": "reveal_end_time",
+            "type": "i64"
+          },
+          {
+            "name": "highest_bid",
+            "type": "u64"
+          },
+          {
+            "name": "highest_bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_bids",
+            "type": "u32"
+          },
+          {
+            "name": "revealed_bids",
+            "type": "u32"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": {
+                "name": "AuctionState"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuctionState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Created"
+          },
+          {
+            "name": "Bidding"
+          },
+          {
+            "name": "Reveal"
+          },
+          {
+            "name": "Finalized"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BidAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bidder",
+            "type": "pubkey"
+          },
+          {
+            "name": "auction",
+            "type": "pubkey"
+          },
+          {
+            "name": "bid_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "escrow_amount",
+            "type": "u64"
+          },
+          {
+            "name": "revealed_amount",
+            "type": "u64"
+          },
+          {
+            "name": "is_revealed",
+            "type": "bool"
+          },
+          {
+            "name": "is_refunded",
+            "type": "bool"
+          },
+          {
+            "name": "is_winner",
+            "type": "bool"
+          },
+          {
+            "name": "committed_at",
+            "type": "i64"
+          },
+          {
+            "name": "revealed_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

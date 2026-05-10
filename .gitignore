@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI & Agent artifacts
+claude.md
+agent.md
+*.log
+*.log.*
+
+# Anchor / Solana build artifacts
+anchor/target/
+anchor/.anchor/
