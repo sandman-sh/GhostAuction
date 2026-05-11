@@ -67,7 +67,7 @@ export default function AuctionDetailPage() {
         const program = getAnchorProgram(dummyWallet);
         const auctionAccount = await program.account.auction.fetch(auctionPubkey);
         
-        const onChainAuction: AuctionData = {
+        let onChainAuction: AuctionData = {
           address: auctionAddress,
           seller: auctionAccount.seller.toBase58(),
           nftMint: auctionAccount.nftMint.toBase58(),
@@ -82,8 +82,27 @@ export default function AuctionDetailPage() {
           state: Object.keys(auctionAccount.state)[0].toLowerCase(),
           createdAt: auctionAccount.createdAt.toNumber(),
         };
-        
-        setAuction((prev) => ({ ...onChainAuction, nftName: prev?.nftName, nftImage: prev?.nftImage }));
+
+        setAuction((prev) => {
+          onChainAuction.nftName = prev?.nftName;
+          onChainAuction.nftImage = prev?.nftImage;
+          return { ...onChainAuction };
+        });
+
+        // If we don't have the NFT metadata cached, fetch it via our new Pinata/Metaplex API
+        if (!onChainAuction.nftImage || !onChainAuction.nftName) {
+          try {
+            const res = await fetch(`/api/nft/${onChainAuction.nftMint}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.name) onChainAuction.nftName = data.name;
+              if (data.image) onChainAuction.nftImage = data.image;
+              setAuction((prev) => (prev ? { ...prev, nftName: data.name, nftImage: data.image } : onChainAuction));
+            }
+          } catch (metadataErr) {
+            console.error('Failed to fetch NFT metadata:', metadataErr);
+          }
+        }
       } catch (e) {
         console.log('Auction account not found on chain:', e);
       }
