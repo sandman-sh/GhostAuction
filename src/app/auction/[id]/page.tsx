@@ -424,7 +424,7 @@ export default function AuctionDetailPage() {
                         placeholder="0.00"
                         min="0.01"
                         step="0.01"
-                        className="neu-input pl-10 text-2xl font-mono font-bold"
+                        className="neu-input pl-12 text-2xl font-mono font-bold"
                       />
                     </div>
                     <p className="font-mono text-xs text-[var(--text-primary)]/40">
