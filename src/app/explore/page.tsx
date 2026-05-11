@@ -33,7 +33,57 @@ export default function ExplorePage() {
   // Wait for Zustand to hydrate from localStorage
   useEffect(() => {
     setMounted(true);
+    fetchAllAuctions();
   }, []);
+
+  const fetchAllAuctions = async () => {
+    try {
+      const { getAnchorProgram } = await import('@/lib/solana');
+      const { PublicKey, Transaction } = await import('@solana/web3.js');
+      
+      const dummyWallet = { 
+        publicKey: new PublicKey('11111111111111111111111111111111'), 
+        signTransaction: async () => new Transaction(), 
+        signAllTransactions: async () => [] 
+      };
+      const program = getAnchorProgram(dummyWallet);
+      
+      const auctionAccounts = await program.account.auction.all();
+      
+      const onChainAuctions: AuctionData[] = auctionAccounts.map(account => ({
+        address: account.publicKey.toBase58(),
+        seller: account.account.seller.toBase58(),
+        nftMint: account.account.nftMint.toBase58(),
+        reservePrice: account.account.reservePrice.toNumber(),
+        startTime: account.account.startTime.toNumber(),
+        biddingEndTime: account.account.biddingEndTime.toNumber(),
+        revealEndTime: account.account.revealEndTime.toNumber(),
+        highestBid: account.account.highestBid.toNumber(),
+        highestBidder: account.account.highestBidder.toBase58(),
+        totalBids: account.account.totalBids,
+        revealedBids: account.account.revealedBids,
+        state: Object.keys(account.account.state)[0].toLowerCase(),
+        createdAt: account.account.createdAt.toNumber(),
+      }));
+
+      // Merge with existing local auctions (to preserve nftName/nftImage)
+      const store = useAuctionStore.getState();
+      const mergedAuctions = [...store.auctions];
+      
+      for (const onChain of onChainAuctions) {
+        const existingIdx = mergedAuctions.findIndex(a => a.address === onChain.address);
+        if (existingIdx >= 0) {
+          mergedAuctions[existingIdx] = { ...mergedAuctions[existingIdx], ...onChain };
+        } else {
+          mergedAuctions.push(onChain);
+        }
+      }
+      
+      store.setAuctions(mergedAuctions);
+    } catch (err) {
+      console.error('Failed to fetch on-chain auctions:', err);
+    }
+  };
 
   const filteredAuctions = auctions
     .filter((a) => {
