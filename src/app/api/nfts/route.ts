@@ -104,7 +104,10 @@ export async function GET(request: NextRequest) {
 
     // Filter for NFTs (decimals === 0, amount === 1)
     const nftAccounts = tokenAccounts.value.filter((ta) => {
-      const info = ta.account.data.parsed.info;
+      const parsed = ta.account.data.parsed;
+      if (!parsed) return false;
+      const info = parsed.info;
+      if (!info || !info.tokenAmount) return false;
       return (
         info.tokenAmount.decimals === 0 &&
         info.tokenAmount.uiAmount === 1
@@ -159,6 +162,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ nfts, count: nfts.length });
   } catch (error: any) {
     console.error('Error fetching NFTs:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Unknown error fetching NFTs' }, { status: 400 });
   }
 }
