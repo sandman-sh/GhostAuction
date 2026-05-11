@@ -115,6 +115,7 @@ export default function MintNFTPage() {
         toast.info('Uploading image to IPFS (Pinata)...');
         const imageResult = await uploadToIPFS(imageFile);
         imageUrl = imageResult.url;
+      }
       toast.info('Uploading metadata to IPFS (Pinata)...');
       const metadataResult = await uploadMetadata(imageUrl);
       if (!signTransaction) {
