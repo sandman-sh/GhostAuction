@@ -13,7 +13,7 @@ import {
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
 import { Program, AnchorProvider } from '@coral-xyz/anchor';
-import { sha256 } from 'crypto-js';
+import CryptoJS from 'crypto-js';
 import { PROGRAM_ID, SOLANA_RPC_URL } from './constants';
 import idl from './idl/ghost_auction.json';
 
@@ -76,7 +76,7 @@ export function hashBid(amount: bigint, nonce: Uint8Array): Uint8Array {
   combined.set(amountBytes);
   combined.set(nonce, amountBytes.length);
 
-  const hashHex = sha256(
+  const hashHex = CryptoJS.SHA256(
     Array.from(combined)
       .map((b) => String.fromCharCode(b))
       .join('')
