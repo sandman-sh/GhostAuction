@@ -35,6 +35,76 @@ export default function ExplorePage() {
     setMounted(true);
   }, []);
 
+  // Fetch all auctions globally from the blockchain
+  useEffect(() => {
+    async function fetchAllAuctions() {
+      try {
+        const { getAnchorProgram } = await import('@/lib/solana');
+        const { PublicKey, Transaction } = await import('@solana/web3.js');
+        const dummyWallet = { 
+          publicKey: PublicKey.default, 
+          signTransaction: async () => new Transaction(), 
+          signAllTransactions: async () => [] 
+        };
+        const program = getAnchorProgram(dummyWallet);
+        const onChainAuctions = await program.account.auction.all();
+        
+        // Merge with local store data
+        let finalAuctions: any[] = [];
+        useAuctionStore.setState((s) => {
+          const merged = new Map(s.auctions.map(a => [a.address, a]));
+          
+          for (const acc of onChainAuctions) {
+            const address = acc.publicKey.toBase58();
+            const existing = merged.get(address);
+            merged.set(address, {
+              address,
+              seller: acc.account.seller.toBase58(),
+              nftMint: acc.account.nftMint.toBase58(),
+              reservePrice: acc.account.reservePrice.toNumber(),
+              startTime: acc.account.startTime.toNumber(),
+              biddingEndTime: acc.account.biddingEndTime.toNumber(),
+              revealEndTime: acc.account.revealEndTime.toNumber(),
+              highestBid: acc.account.highestBid.toNumber(),
+              highestBidder: acc.account.highestBidder.toBase58(),
+              totalBids: acc.account.totalBids,
+              revealedBids: acc.account.revealedBids,
+              state: Object.keys(acc.account.state)[0].toLowerCase(),
+              createdAt: acc.account.createdAt.toNumber(),
+              // Preserve locally cached NFT metadata if we have it
+              nftName: existing?.nftName,
+              nftImage: existing?.nftImage,
+            });
+          }
+          finalAuctions = Array.from(merged.values());
+          return { auctions: finalAuctions };
+        });
+
+        // Async fetch missing metadata for any new auctions found on chain
+        const missingMetadata = finalAuctions.filter(a => !a.nftImage || !a.nftName);
+        for (const auction of missingMetadata) {
+          fetch(`/api/nft/${auction.nftMint}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.name || data.image) {
+                useAuctionStore.getState().updateAuction(auction.address, {
+                  nftName: data.name || auction.nftName,
+                  nftImage: data.image || auction.nftImage
+                });
+              }
+            })
+            .catch(err => console.error("Failed to fetch NFT metadata:", err));
+        }
+      } catch (err) {
+        console.error("Failed to fetch global auctions:", err);
+      }
+    }
+    
+    if (mounted) {
+      fetchAllAuctions();
+    }
+  }, [mounted]);
+
   const filteredAuctions = auctions
     .filter((a) => {
       if (filter === 'all') return true;
