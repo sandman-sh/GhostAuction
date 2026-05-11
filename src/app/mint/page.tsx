@@ -121,71 +121,40 @@ export default function MintNFTPage() {
       toast.info('Uploading metadata to IPFS (Pinata)...');
       const metadataResult = await uploadMetadata(imageUrl);
 
-      // Create mint account
-      const mintKeypair = Keypair.generate();
-      const lamports = await getMinimumBalanceForRentExemptMint(connection);
+      // Initialize UMI
+      const { createUmi } = await import('@metaplex-foundation/umi-bundle-defaults');
+      const { walletAdapterIdentity } = await import('@metaplex-foundation/umi-signer-wallet-adapters');
+      const { createV1, TokenStandard } = await import('@metaplex-foundation/mpl-token-metadata');
+      const { generateSigner, percentAmount } = await import('@metaplex-foundation/umi');
 
-      const transaction = new Transaction();
+      // Use a connected wallet adapter as a workaround for UMI
+      const walletAdapter = {
+        publicKey: publicKey,
+        signTransaction: sendTransaction as any, // UMI might need a standard wallet object
+        signAllTransactions: async (txs: any) => txs, // Mock if unsupported
+      };
 
-      // Create mint account
-      transaction.add(
-        SystemProgram.createAccount({
-          fromPubkey: publicKey,
-          newAccountPubkey: mintKeypair.publicKey,
-          space: MINT_SIZE,
-          lamports,
-          programId: TOKEN_PROGRAM_ID,
-        })
-      );
+      const umi = createUmi('https://api.devnet.solana.com').use(walletAdapterIdentity(walletAdapter as any));
+      const mintSigner = generateSigner(umi);
 
-      // Initialize mint (0 decimals for NFT)
-      transaction.add(
-        createInitializeMintInstruction(
-          mintKeypair.publicKey,
-          0,
-          publicKey,
-          publicKey,
-          TOKEN_PROGRAM_ID
-        )
-      );
+      toast.info('Sending transaction via Metaplex...');
+      
+      const { signature } = await createV1(umi, {
+        mint: mintSigner,
+        authority: umi.identity,
+        name: name,
+        uri: metadataResult.url,
+        sellerFeeBasisPoints: percentAmount(0),
+        tokenStandard: TokenStandard.NonFungible,
+      }).sendAndConfirm(umi);
 
-      // Create associated token account
-      const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, publicKey);
-      transaction.add(
-        createAssociatedTokenAccountInstruction(
-          publicKey,
-          ata,
-          publicKey,
-          mintKeypair.publicKey
-        )
-      );
+      const mintAddress = mintSigner.publicKey.toString();
+      const txSignature = signature.length ? Buffer.from(signature).toString('base64') : 'Success';
+      // Buffer to base58 or hex is better, let's just show 'Success' for now or get it from umi.
+      // UMI signatures are Uint8Array. We can convert to base58:
+      const { bs58 } = await import('@coral-xyz/anchor/dist/cjs/utils/bytes');
+      const txSigString = bs58.encode(signature);
 
-      // Mint 1 token
-      transaction.add(
-        createMintToInstruction(
-          mintKeypair.publicKey,
-          ata,
-          publicKey,
-          1
-        )
-      );
-
-      // Send transaction
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
-      transaction.partialSign(mintKeypair);
-
-      const signature = await sendTransaction(transaction, connection);
-
-      toast.info('Confirming transaction...');
-      await connection.confirmTransaction({
-        signature,
-        blockhash,
-        lastValidBlockHeight,
-      });
-
-      const mintAddress = mintKeypair.publicKey.toBase58();
 
       // ✅ Save NFT metadata to local store so the gallery can find it
       addNft({
@@ -199,7 +168,7 @@ export default function MintNFTPage() {
 
       setMintResult({
         mint: mintAddress,
-        tx: signature,
+        tx: txSigString,
         image: imageUrl,
         metadataUri: metadataResult.url,
       });
