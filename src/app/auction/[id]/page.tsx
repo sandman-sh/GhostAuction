@@ -54,10 +54,42 @@ export default function AuctionDetailPage() {
   const fetchOnChainData = async () => {
     try {
       const connection = getConnection();
-      // Fetch recent transactions for this auction
       const auctionPubkey = new PublicKey(auctionAddress);
-      const signatures = await connection.getSignaturesForAddress(auctionPubkey, { limit: 20 });
 
+      // 1. Fetch the actual Auction account from the program
+      try {
+        const { getAnchorProgram } = await import('@/lib/solana');
+        const dummyWallet = { 
+          publicKey: auctionPubkey, 
+          signTransaction: async () => new Transaction(), 
+          signAllTransactions: async () => [] 
+        };
+        const program = getAnchorProgram(dummyWallet);
+        const auctionAccount = await program.account.auction.fetch(auctionPubkey);
+        
+        const onChainAuction: AuctionData = {
+          address: auctionAddress,
+          seller: auctionAccount.seller.toBase58(),
+          nftMint: auctionAccount.nftMint.toBase58(),
+          reservePrice: auctionAccount.reservePrice.toNumber(),
+          startTime: auctionAccount.startTime.toNumber(),
+          biddingEndTime: auctionAccount.biddingEndTime.toNumber(),
+          revealEndTime: auctionAccount.revealEndTime.toNumber(),
+          highestBid: auctionAccount.highestBid.toNumber(),
+          highestBidder: auctionAccount.highestBidder.toBase58(),
+          totalBids: auctionAccount.totalBids,
+          revealedBids: auctionAccount.revealedBids,
+          state: Object.keys(auctionAccount.state)[0].toLowerCase(),
+          createdAt: auctionAccount.createdAt.toNumber(),
+        };
+        
+        setAuction((prev) => ({ ...onChainAuction, nftName: prev?.nftName, nftImage: prev?.nftImage }));
+      } catch (e) {
+        console.log('Auction account not found on chain:', e);
+      }
+
+      // 2. Fetch recent transactions for this auction
+      const signatures = await connection.getSignaturesForAddress(auctionPubkey, { limit: 20 });
       const activities = signatures.map((sig) => ({
         type: 'transaction',
         address: sig.signature.slice(0, 8),
