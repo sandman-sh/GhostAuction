@@ -19,7 +19,7 @@ import { getExplorerUrl, SOLANA_NETWORK } from '@/lib/constants';
 import { useUserStore } from '@/lib/stores';
 
 export default function MintNFTPage() {
-  const { publicKey, sendTransaction, connected } = useWallet();
+  const { publicKey, sendTransaction, signTransaction, signAllTransactions, connected } = useWallet();
   const addNft = useUserStore((s) => s.addNft);
 
   const [name, setName] = useState('');
@@ -115,11 +115,11 @@ export default function MintNFTPage() {
         toast.info('Uploading image to IPFS (Pinata)...');
         const imageResult = await uploadToIPFS(imageFile);
         imageUrl = imageResult.url;
-      }
-
-      // Upload metadata JSON to IPFS via Pinata
       toast.info('Uploading metadata to IPFS (Pinata)...');
       const metadataResult = await uploadMetadata(imageUrl);
+      if (!signTransaction) {
+        throw new Error('Wallet does not support signing transactions');
+      }
 
       // Initialize UMI
       const { createUmi } = await import('@metaplex-foundation/umi-bundle-defaults');
@@ -127,14 +127,13 @@ export default function MintNFTPage() {
       const { createV1, TokenStandard } = await import('@metaplex-foundation/mpl-token-metadata');
       const { generateSigner, percentAmount } = await import('@metaplex-foundation/umi');
 
-      // Use a connected wallet adapter as a workaround for UMI
-      const walletAdapter = {
+      const umiWallet = {
         publicKey: publicKey,
-        signTransaction: sendTransaction as any, // UMI might need a standard wallet object
-        signAllTransactions: async (txs: any) => txs, // Mock if unsupported
+        signTransaction: signTransaction as any,
+        signAllTransactions: signAllTransactions as any,
       };
 
-      const umi = createUmi('https://api.devnet.solana.com').use(walletAdapterIdentity(walletAdapter as any));
+      const umi = createUmi('https://api.devnet.solana.com').use(walletAdapterIdentity(umiWallet as any));
       const mintSigner = generateSigner(umi);
 
       toast.info('Sending transaction via Metaplex...');
