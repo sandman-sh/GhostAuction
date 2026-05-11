@@ -74,7 +74,8 @@ async function fetchJsonMetadata(uri: string) {
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { mint: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ mint: string }> }) {
+  const params = await props.params;
   const mintAddress = params.mint;
 
   try {
