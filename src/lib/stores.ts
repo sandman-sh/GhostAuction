@@ -45,7 +45,10 @@ export const useAuctionStore = create<AuctionStore>()(
         })),
       setLoading: (loading) => set({ loading }),
     }),
-    { name: 'ghost-auction-auctions' }
+    { 
+      name: 'ghost-auction-auctions',
+      version: 1, // Increment version to clear existing cache globally
+    }
   )
 );
 
@@ -106,7 +109,10 @@ export const useUserStore = create<UserStore>()(
         nfts: [nft, ...s.nfts.filter((n) => n.mint !== nft.mint)],
       })),
     }),
-    { name: 'ghost-auction-user' }
+    { 
+      name: 'ghost-auction-user',
+      version: 1, // Increment version to clear broken NFTs globally
+    }
   )
 );
 
