@@ -114,23 +114,24 @@ export async function GET(request: NextRequest) {
       );
     });
 
-    // Get list of mint addresses for on-chain lookup
-    const mintAddresses = nftAccounts.map((ta) => ta.account.data.parsed.info.mint as string);
+    // Get list of mint addresses for on-chain lookup (Limit to 20 to prevent Vercel 10s timeouts)
+    const mintAddresses = nftAccounts.map((ta) => ta.account.data.parsed.info.mint as string).slice(0, 20);
 
-    // Fetch metadata for each NFT — try on-chain first, then fallback
+    const metadataPDAs = mintAddresses.map((mint) => getMetadataPDA(new PublicKey(mint)));
+    
+    // Batch fetch all on-chain metadata accounts in ONE request to prevent 429 Rate Limits
+    const accountsInfo = await connection.getMultipleAccountsInfo(metadataPDAs);
+
+    // Fetch off-chain metadata for each NFT
     const nfts = await Promise.all(
-      mintAddresses.map(async (mintAddress) => {
-        const mintPubkey = new PublicKey(mintAddress);
-
+      mintAddresses.map(async (mintAddress, index) => {
         let name = `NFT ${mintAddress.slice(0, 6)}...${mintAddress.slice(-4)}`;
         let image = '';
         let uri = '';
         let description = '';
 
         try {
-          // Try Metaplex on-chain metadata
-          const metadataPDA = getMetadataPDA(mintPubkey);
-          const accountInfo = await connection.getAccountInfo(metadataPDA);
+          const accountInfo = accountsInfo[index];
 
           if (accountInfo?.data) {
             const onChain = decodeMetadata(Buffer.from(accountInfo.data));
