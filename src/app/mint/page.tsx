@@ -125,7 +125,7 @@ export default function MintNFTPage() {
       // Initialize UMI
       const { createUmi } = await import('@metaplex-foundation/umi-bundle-defaults');
       const { walletAdapterIdentity } = await import('@metaplex-foundation/umi-signer-wallet-adapters');
-      const { createNft } = await import('@metaplex-foundation/mpl-token-metadata');
+      const { createNft, mplTokenMetadata } = await import('@metaplex-foundation/mpl-token-metadata');
       const { generateSigner, percentAmount } = await import('@metaplex-foundation/umi');
 
       const umiWallet = {
@@ -134,7 +134,9 @@ export default function MintNFTPage() {
         signAllTransactions: signAllTransactions as any,
       };
 
-      const umi = createUmi('https://api.devnet.solana.com').use(walletAdapterIdentity(umiWallet as any));
+      const umi = createUmi('https://api.devnet.solana.com')
+        .use(walletAdapterIdentity(umiWallet as any))
+        .use(mplTokenMetadata());
       const mintSigner = generateSigner(umi);
 
       toast.info('Sending transaction via Metaplex...');
