@@ -125,7 +125,7 @@ export default function MintNFTPage() {
       // Initialize UMI
       const { createUmi } = await import('@metaplex-foundation/umi-bundle-defaults');
       const { walletAdapterIdentity } = await import('@metaplex-foundation/umi-signer-wallet-adapters');
-      const { createV1, TokenStandard } = await import('@metaplex-foundation/mpl-token-metadata');
+      const { createNft } = await import('@metaplex-foundation/mpl-token-metadata');
       const { generateSigner, percentAmount } = await import('@metaplex-foundation/umi');
 
       const umiWallet = {
@@ -139,13 +139,12 @@ export default function MintNFTPage() {
 
       toast.info('Sending transaction via Metaplex...');
       
-      const { signature } = await createV1(umi, {
+      const { signature } = await createNft(umi, {
         mint: mintSigner,
         authority: umi.identity,
         name: name,
         uri: metadataResult.url,
         sellerFeeBasisPoints: percentAmount(0),
-        tokenStandard: TokenStandard.NonFungible,
       }).sendAndConfirm(umi);
 
       const mintAddress = mintSigner.publicKey.toString();
