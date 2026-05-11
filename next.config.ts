@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  serverExternalPackages: ['@solana/web3.js', '@coral-xyz/anchor'],
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'gateway.pinata.cloud' },
